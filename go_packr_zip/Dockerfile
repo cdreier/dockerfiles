@@ -1,6 +1,6 @@
 FROM golang:1.13.3
 
-RUN go get -u github.com/gobuffalo/packr/...
+RUN go get -u github.com/gobuffalo/packr/packr
 RUN go get -u github.com/gobuffalo/packr/v2/packr2
 RUN go get -u github.com/inconshreveable/mousetrap
 RUN GOOS=windows go get github.com/konsorten/go-windows-terminal-sequences
