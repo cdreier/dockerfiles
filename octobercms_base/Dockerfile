@@ -14,4 +14,4 @@ RUN docker-php-ext-install zip \
 RUN docker-php-ext-install mysqli pdo pdo_mysql \
   && docker-php-ext-enable pdo_mysql
 
-COPY  apache/000-default.conf /etc/apache2/sites-available/000-default.conf
+COPY  apache/apach2.conf /etc/apache2/apach2.conf
