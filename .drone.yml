@@ -2,17 +2,6 @@ kind: pipeline
 name: default
 
 steps:
-- name: go_packr_zip-dockerize
-  image: plugins/docker
-  settings:
-    username:
-      from_secret: docker_username
-    password:
-      from_secret: docker_password
-    repo: drailing/go_packr_zip
-    tags: latest
-    dockerfile: go_packr_zip/Dockerfile
-
 - name: octoberbase-dockerize
   image: plugins/docker
   settings:
@@ -23,3 +12,15 @@ steps:
     repo: drailing/octobercms_base
     tags: latest
     dockerfile: octobercms_base/Dockerfile
+    context: octobercms_base
+
+- name: go_packr_zip-dockerize
+  image: plugins/docker
+  settings:
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+    repo: drailing/go_packr_zip
+    tags: latest
+    dockerfile: go_packr_zip/Dockerfile
