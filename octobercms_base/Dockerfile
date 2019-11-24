@@ -14,4 +14,7 @@ RUN docker-php-ext-install zip \
 RUN docker-php-ext-install mysqli pdo pdo_mysql \
   && docker-php-ext-enable pdo_mysql
 
+RUN a2enmod rewrite
+
 COPY  apache/apache2.conf /etc/apache2/apache2.conf
+COPY  apache/000-default.conf /etc/apache2/sites-available/000-default.conf
