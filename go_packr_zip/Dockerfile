@@ -1,4 +1,4 @@
-FROM golang:1.13.3
+FROM golang:1.13.5
 
 RUN go get -u github.com/gobuffalo/packr/packr
 RUN go get -u github.com/gobuffalo/packr/v2/packr2
