@@ -1,4 +1,4 @@
-FROM golang:1.13.5
+FROM golang:1.13.7
 
 RUN go get -u github.com/gobuffalo/packr/packr
 RUN go get -u github.com/gobuffalo/packr/v2/packr2
@@ -11,8 +11,11 @@ RUN mv /go/src/github.com/inconshreveable/mousetrap /usr/local/go/src/github.com
 RUN mkdir --parents /usr/local/go/src/github.com/konsorten
 RUN mv /go/src/github.com/konsorten/go-windows-terminal-sequences /usr/local/go/src/github.com/konsorten
 
+RUN go get -u github.com/markbates/pkger/cmd/pkger
+
 RUN cp /go/bin/packr /usr/local/go/bin
 RUN cp /go/bin/packr2 /usr/local/go/bin
+RUN cp /go/bin/pkger /usr/local/go/bin
 
 RUN apt-get update
 RUN apt-get install -y zip
