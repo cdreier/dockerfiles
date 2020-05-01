@@ -2,6 +2,18 @@ kind: pipeline
 name: default
 
 steps:
+- name: godot-export-container
+  image: plugins/docker
+  settings:
+    username:
+      from_secret: docker_username
+    password:
+      from_secret: docker_password
+    repo: drailing/godot-export-container
+    tags: latest
+    dockerfile: godot-export/Dockerfile
+    context: godot-export
+
 - name: octoberbase-dockerize
   image: plugins/docker
   settings:
