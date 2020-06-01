@@ -1,4 +1,4 @@
-from alpine
+FROM alpine
 
 ADD golangwebserver /usr/bin
 
