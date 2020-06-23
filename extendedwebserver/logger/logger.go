@@ -54,7 +54,8 @@ func RequestMiddleware(next http.Handler) http.Handler {
 				"duration", diff.Milliseconds(),
 				"path", r.URL.Path,
 				"method", r.Method,
-				"referer", r.Header.Get("Referer"),
+				"referer", r.Header.Get("referer"),
+				"userAgent", r.Header.Get("user-agent"),
 			)
 		}()
 		next.ServeHTTP(w, r)
