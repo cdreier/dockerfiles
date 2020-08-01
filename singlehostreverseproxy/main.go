@@ -53,6 +53,22 @@ func getHandler(target string) http.HandlerFunc {
 		r.Header.Set("X-Forwarded-Host", r.Header.Get("Host"))
 		r.Host = url.Host
 
+		// realServer.ServeHTTP(&customResponseWriter{w}, r)
 		realServer.ServeHTTP(w, r)
+	}
+}
+
+type customResponseWriter struct {
+	http.ResponseWriter
+}
+
+func (w *customResponseWriter) WriteHeader(code int) {
+	w.ResponseWriter.WriteHeader(code)
+	log.Println("set code", code)
+	if code >= 400 {
+		_, err := w.ResponseWriter.Write([]byte("oops"))
+		if err != nil {
+			log.Println("err", err)
+		}
 	}
 }
