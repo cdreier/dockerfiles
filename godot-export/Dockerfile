@@ -1,6 +1,6 @@
 FROM debian:stable-slim
 
-ADD Godot_v3.2.3-stable_linux_headless.64 /bin
+ADD Godot_v3.5-stable_linux_headless.64 /bin
 ADD templates/linux_x11_32_debug /root/.local/share/godot/templates/3.2.3.stable/
 ADD templates/linux_x11_32_release /root/.local/share/godot/templates/3.2.3.stable/
 ADD templates/linux_x11_64_debug /root/.local/share/godot/templates/3.2.3.stable/
