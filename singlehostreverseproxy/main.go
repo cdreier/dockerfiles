@@ -26,6 +26,15 @@ func main() {
 
 	port := envInt("PORT", 8080)
 	metricsPort := envInt("METRICS_PORT", 9102)
+	// METRICS_ROUTE_REGEX: which paths get their own `route` label; unmatched → "other".
+	//   '^/$|^/health$'              / and /health only
+	//   '^/$|^/assets/.+'            SPA index + hashed assets
+	//   '^(/api/[^/]+)'              /api/users/42 → /api/users
+	routeRegex := strings.TrimSpace(os.Getenv("METRICS_ROUTE_REGEX"))
+	if err := metrics.SetRouteRegex(routeRegex); err != nil {
+		slog.Error("invalid METRICS_ROUTE_REGEX", "value", routeRegex, "error", err)
+		os.Exit(1)
+	}
 
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
@@ -36,7 +45,7 @@ func main() {
 	metrics.Start(metricsPort)
 
 	addr := fmt.Sprintf(":%d", port)
-	slog.Info("starting reverse proxy", "addr", addr, "target", target)
+	slog.Info("starting reverse proxy", "addr", addr, "target", target, "route_regex", routeRegex)
 	if err := http.ListenAndServe(addr, r); err != nil {
 		slog.Error("server stopped", "error", err)
 		os.Exit(1)
@@ -65,7 +74,7 @@ func getHandler(target string) http.HandlerFunc {
 	realServer := httputil.NewSingleHostReverseProxy(upstream)
 	realServer.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
 		slog.Error("proxy error", "error", err, "path", r.URL.Path, "target", target)
-		metrics.IncProxyError("upstream")
+		metrics.IncProxyError("upstream", r.URL.Path)
 		w.WriteHeader(http.StatusBadGateway)
 	}
 
