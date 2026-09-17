@@ -25,8 +25,9 @@ func main() {
 	}
 
 	port := envInt("PORT", 8080)
+	// METRICS_PORT=0 disables scrape server, request metrics and error counters.
 	metricsPort := envInt("METRICS_PORT", 9102)
-	// METRICS_ROUTE_REGEX: which paths get their own `route` label; unmatched → "other".
+	// METRICS_ROUTE_REGEX: unset/empty disables per-route labels (all become "other").
 	//   '^/$|^/health$'              / and /health only
 	//   '^/$|^/assets/.+'            SPA index + hashed assets
 	//   '^(/api/[^/]+)'              /api/users/42 → /api/users
@@ -36,16 +37,16 @@ func main() {
 		os.Exit(1)
 	}
 
+	metrics.Start(metricsPort)
+
 	r := chi.NewRouter()
 	r.Use(middleware.Recoverer)
 	r.Use(metrics.Middleware)
 	r.Use(logger.RequestMiddleware)
 	r.Get("/*", getHandler(target))
 
-	metrics.Start(metricsPort)
-
 	addr := fmt.Sprintf(":%d", port)
-	slog.Info("starting reverse proxy", "addr", addr, "target", target, "route_regex", routeRegex)
+	slog.Info("starting reverse proxy", "addr", addr, "target", target, "metrics_port", metricsPort, "route_regex", routeRegex)
 	if err := http.ListenAndServe(addr, r); err != nil {
 		slog.Error("server stopped", "error", err)
 		os.Exit(1)

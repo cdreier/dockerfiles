@@ -17,6 +17,7 @@ import (
 const unmatchedRoute = "other"
 
 var (
+	enabled bool
 	routeRe *regexp.Regexp
 
 	requestsTotal = promauto.NewCounterVec(prometheus.CounterOpts{
@@ -52,9 +53,9 @@ var (
 	}, []string{"reason", "route"})
 )
 
-// SetRouteRegex compiles METRICS_ROUTE_REGEX. Empty pattern leaves every
-// request labeled as "other". A capturing group becomes the label value;
-// otherwise the full matching path is used.
+// SetRouteRegex compiles METRICS_ROUTE_REGEX.
+// Unset or empty disables per-route labels: every request is "other".
+// A capturing group becomes the label value; otherwise the full matching path is used.
 //
 // Examples:
 //
@@ -107,13 +108,16 @@ func Handler() http.Handler {
 	return mux
 }
 
-// Start launches the scrape server on its own port. Port 0 disables it.
+// Start launches the scrape server on its own port.
+// METRICS_PORT=0 disables scrape endpoint, request instrumentation and error counters.
 func Start(port int) {
 	if port <= 0 {
-		slog.Info("metrics server disabled", "port", port)
+		enabled = false
+		slog.Info("metrics disabled", "port", port)
 		return
 	}
 
+	enabled = true
 	addr := fmt.Sprintf(":%d", port)
 	srv := &http.Server{
 		Addr:              addr,
@@ -134,6 +138,10 @@ func Start(port int) {
 // The route label is taken from the original request path before index rewrite.
 func Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !enabled {
+			next.ServeHTTP(w, r)
+			return
+		}
 		route := routeLabel(r.URL.Path)
 		labels := prometheus.Labels{"route": route}
 		promhttp.InstrumentHandlerInFlight(inFlight.With(labels),
@@ -148,5 +156,8 @@ func Middleware(next http.Handler) http.Handler {
 
 // IncProxyError increments the error counter for the given reason and path.
 func IncProxyError(reason, path string) {
+	if !enabled {
+		return
+	}
 	proxyErrors.WithLabelValues(reason, routeLabel(path)).Inc()
 }
